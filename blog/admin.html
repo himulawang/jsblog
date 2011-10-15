@@ -12,17 +12,39 @@
 
             #articles { width: 220px; height: 900px; }
             #edit-area { width: 900px; height: 900px; }
+
+            .article-title { width: 220px; cursor: pointer; }
+            .button { cursor: pointer; }
         </style>
         <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js'></script>
         <script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js'></script>
-        <script src='../config.js'></script>
-        <script src='js/admin.js'></script>
+        <script src='./tiny_mce/jquery.tinymce.js'></script>
+        <script src='./js/admin.js'></script>
+        <script src='./js/admin_main.js'></script>
     </head>
     <body>
         <div id='dialog'></div>
         <div id='articles' class='border-right left'>
         </div>
-        <div id='edit-area' class='left'>
+        <div id='content' class='left'>
+            <div>
+                <span>Title: </span>
+                <input id='title'>
+                <span>Create Time: </span>
+                <span id='date'></span>
+            </div>
+            <div id='edit-area'></div>
+        </div>
+        <div id='buttons' class='left'>
+            <div>
+                <div id='new' class='button' onclick='admin.newArticle();'>New</div>
+            </div>
+            <div>
+                <div id='save' class='button' onclick='admin.save();'>Save</div>
+            </div>
+            <div>
+                <div id='del' class='button' onclick='admin.del();'>Del</div>
+            </div>
         </div>
         <div class='clear'></div>
     </body>

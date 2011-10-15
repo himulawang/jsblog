@@ -1,94 +1,106 @@
 require('./config');
+require('./fc');
 var express = require('express');
 var app = express.createServer();
 var BlogPost = require('./db').BlogPost;
 
+app.use(express.bodyParser());
 app.use(app.router);
 app.use(express.static(__dirname + '/'));
 
 var downloads = {};
+var sessionId;
+app.get(/server.js|config.js|db.js|fc.js/, function(req, res, next) {
+    res.send('nice try');
+});
+
+/* Admin Start */
+app.post('/blog/login', function(req, res, next) {
+    if (req.body.password === PASSWORD) {
+        sessionId = fc.guid();
+        resResult(res, { sessionId : sessionId });
+        return;
+    }
+    resFailResult(res);
+});
+app.post('/blog/initList', function(req, res, next) {
+    if (!checkLogin(req.body.sessionId)) {
+        resFailResult(res);
+        return;
+    }
+    BlogPost.find({}).desc('date').run(function(err, docs) {
+        resResult(res, docs);
+    });
+});
+app.post('/blog/save', function(req, res, next) {
+    if (!checkLogin(req.body.sessionId)) {
+        resFailResult(res);
+        return;
+    }
+    // new article
+    if (req.body.date === '' && req.body._id === '') {
+        var newArticle = new BlogPost({
+            title : req.body.title,
+            body : req.body.body,
+            date : new Date()
+        });
+        newArticle.save(function(err) {
+            BlogPost.find({}).desc('date').limit(1).run(function(err, docs) {
+                if (!docs[0]) {
+                    resFailResult(res);
+                    return;
+                }
+                resResult(res, { newArticle : true, _id : docs[0]._id, date : docs[0].date });
+            })
+        });
+        return;
+    }
+
+    // old article
+    BlogPost.update(
+        { _id : req.body._id }, // conditions
+        { title : req.body.title, body : req.body.body }, // docs
+        {}, // options
+        function(err) {
+            resResult(res, { newArticle : false });
+        }
+    );
+});
+app.post('/blog/del', function(req, res, next) {
+    if (!checkLogin(req.body.sessionId)) {
+        resFailResult(res);
+        return;
+    }
+    BlogPost.remove({ _id : req.body._id }, function(err) {
+        resResult(res, { delResult : true });
+    });
+});
+/* Admin End */
+
+/* Index Start */
+app.post('/blog/getList', function(req, res, next) {
+    BlogPost.find({}).desc('date').limit(10).run(function(err, docs) {
+        resResult(res, docs);
+    });
+});
+/* Index End */
 app.get('/*', function(req, res, next){
     var file = req.params[0];
     downloads[file] = downloads[file] || 0;
     ++downloads[file];
     next();
 });
-
 app.listen(PORT);
 
-/* Websocket For Admin */
-var WebSocketServer = require('websocket').server;
-
-var ws = new WebSocketServer({ httpServer: app });
-
-var connections = [];
-
-ws.on('request', function(request){
-    var connection = request.accept('jsblog', request.origin);
-    connection.login = false;
-    connections.push(connection);
-
-    connection.on('close', function() {
-        console.log('Disconnected');
-
-        var index = connections.indexOf(connection);
-        if (index !== -1) {
-            delete connections[index];
-        }
-    });
-
-    connection.on('message', function(message) {
-        if (message.type !== 'utf8') {
-            return;
-        }
-        // validate JSON
-        try {
-            var cmd = JSON.parse(message.utf8Data);
-        } catch (e) {
-            console.log(e);
-            return;
-        }
-        // validate login
-        if (!connection.login) {
-            login(cmd.password, connection);
-        }
-
-        input(cmd, connection);
-    });
-
-});
-
-var login = function(password, connection) {
-    if (!password || password !== '123') {
-        connection.close();
+var checkLogin = function(reqSessionId) {
+    if (reqSessionId === sessionId) {
+        return true;
     }
-    connection.login = true;
-    var result = { result: 1 };
-    output(result, connection);
+    return false;
 };
-
-var input = function(cmd, connection) {
-    var action = cmd.action;
-    if (!action || typeof process[action] === "undefined") {
-        return;
-    }
-    process[action](cmd, connection);
+var resFailResult = function(res) {
+    res.send(JSON.stringify({ result : 0 }));
 };
-
-var output = function(message, connection) {
-    connection.sendUTF(JSON.stringify(message));
+var resResult = function(res, data) {
+    res.send(JSON.stringify({ result : 1, data : data}));
 };
-
-var Process = function() {};
-Process.prototype.initList = function(cmd, connection) {
-    BlogPost.find({})
-        .desc('date')
-        .run(function(err, docs) {
-            output(docs, connection);
-            console.log(docs);
-        });
-};
-Process.prototype.add = function(cmd, connection) {
-};
-
-var process = new Process(); 

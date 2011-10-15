@@ -20,4 +20,4 @@ if (env === 'local') {
 
 G.DB = 'mongodb://127.0.0.1/jsblog';
 G.PROTOCOL = 'jsblog';
-
+G.PASSWORD = '123';
