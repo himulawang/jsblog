@@ -8,6 +8,7 @@ if (!G) {
     G = global;
 }
 
+//var env = 'local';
 var env = 'live';
 
 if (env === 'local') {

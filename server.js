@@ -10,7 +10,7 @@ app.use(express.static(__dirname + '/'));
 
 var downloads = {};
 var sessionId;
-app.get(/server.js|config.js|db.js|fc.js/, function(req, res, next) {
+app.get(/server.js|config.js|db.js/, function(req, res, next) {
     res.send('nice try');
 });
 

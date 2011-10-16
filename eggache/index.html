@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+<head>
+    <title>Eggac He HTML5</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf8">
+    <style>
+        div { font-family: Arial, monaco; }
+        /* global */
+        .center { margin-left: auto; margin-right: auto; }
+        .border { border: 1px solid #DDDDDD; }
+        .button { margin-top: 20px; width: 156px; height: 63px; text-align: center; cursor: pointer; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .hide { display: none; }
+        .alpha { opacity: .6; }
+        .left { float: left; }
+        .clear { clear: both; }
+        /* color */
+        .black { color: black; }
+        .red { color: #FF0055; }
+        .green { color: green; }
+        .blue { color: #0055FF; }
+        .grey { color: #333333; }
+
+        /* menu */
+        #menu { width: 480px; height: 320px; background-image: url('img/menu.jpg'); }
+        #button-start { background-image: url('img/btnStart.png'); }
+        #button-start:hover { background-image: url('img/btnStart_mouseover.png'); }
+        #button-music { background-image: url('img/btnMusic.png'); }
+        #button-music:hover { background-image: url('img/btnMusic_mouseover.png'); }
+        #button-sound { background-image: url('img/btnSound.png'); }
+        #button-sound:hover { background-image: url('img/btnSound_mouseover.png'); }
+
+        /* game */
+        #game { width: 480px; height: 320px; }
+
+        #banner-win { width: 320px; height: 117px; background-image: url('img/winner_banner.png'); z-index: 11; left: 80px; top: 101px; cursor: pointer; }
+        #banner-lose { width: 320px; height: 117px; background-image: url('img/lose_banner.png'); z-index: 11; left: 80px; top: 101px; cursor: pointer; }
+
+        #author { margin-left: 30px; margin-top: 20px; 
+            -webkit-transform: rotateZ(5deg); 
+            -webkit-transition: -webkit-transform 1.5s ease-in-out; 
+            -moz-transform: rotateZ(5deg); 
+            -moz-transition: -moz-transform 1.5s ease-in-out; 
+            z-index: 20; cursor: pointer; width: 300px; }
+        #author:hover { -webkit-transform: rotateZ(-5deg); -moz-transform: rotateZ(-5deg); }
+        .author-work { font-weight: bold; font-size: 20px; text-shadow: rgba(0, 0, 0, 0.5) 0 5px 5px; }
+        .author-name { padding-left: 10px; }
+
+    </style>
+    <script src='js/jquery-1.6.2.min.js'></script>
+    <script src='js/mapdata.js'></script>
+    <script src='js/fc.js'></script>
+    <script src='js/util.js'></script>
+    <script src='js/event.js'></script>
+    <script src='js/obj.js'></script>
+    <script src='js/elf.js'></script>
+    <script src='js/foot.js'></script>
+    <script src='js/monster.js'></script>
+    <script src='js/sprite.js'></script>
+    <script src='js/hole.js'></script>
+    <script src='js/animation.js'></script>
+    <script src='js/animation_elf.js'></script>
+    <script src='js/animation_monster.js'></script>
+    <script src='js/animation_sprite.js'></script>
+    <script src='js/animation_foot.js'></script>
+    <script src='js/animation_hole.js'></script>
+    <script src='js/ai.js'></script>
+    <script src='js/ai_monster.js'></script>
+    <script src='js/map.js'></script>
+    <script src='js/findway.js'></script>
+    <script src='js/audio.js'></script>
+    <script>
+        // constant
+        var GRID_MAX_WIDTH = 30;
+        var GRID_MAX_HEIGHT = 20;
+        var GRID_SINGLE_WIDTH = 16;
+        var GRID_SINGLE_HEIGHT = 16;
+        var audio;
+        var events;
+        var elf;
+        var findway;
+        var monster1, monster2, monster3;
+        var sprites = [];
+        var savedSprites = [];
+        var map;
+        var foot;
+        var hole;
+        var requestAnimationFrame = window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
+        var cancelRequestAnimationFrame = window.webkitCancelRequestAnimationFrame || window.mozCancelRequestAnimationFrame;
+
+        /* Load Images */
+        var sceneImages = {};
+        sceneImages[6] = new Image();
+        sceneImages[7] = new Image();
+        sceneImages[8] = new Image();
+        sceneImages[9] = new Image();
+        sceneImages[10] = new Image();
+        sceneImages[6].src = "img/yellow.png";
+        sceneImages[7].src = "img/red.png";
+        sceneImages[8].src = "img/purple.png";
+        sceneImages[9].src = "img/blue.png";
+        sceneImages[10].src = "img/orange.png";
+
+        var elfImage = new Image();
+        elfImage.src = "img/elf.png";
+        var spriteImage = new Image();
+        spriteImage.src = "img/sprite.png";
+        var monsterImage = new Image();
+        monsterImage.src = "img/monster.png";
+
+        var footImage = new Image();
+        footImage.src = "img/speedfoot.png";
+
+        var holeImage = new Image();
+        holeImage.src = "img/hole.png";
+
+        $(document).ready(function() {
+            audio = new Audio();
+
+            events = new Event();
+            events.initMenuEvent();
+            events.initWinLostBanner();
+        });
+    </script>
+</head>
+<body>
+    <div id='author' class='left'>
+        <div class='author-work black'>Audio / Hidden Big Boss</div>
+        <div class='author-name grey'>Robert Bai</div>
+        <div class='author-work red'>Art</div>
+        <div class='author-name grey'>Arry Jin</div>
+        <div class='author-work green'>Director / QA</div>
+        <div class='author-name grey'>Jeff Huang</div>
+        <div class='author-work green'>QA</div>
+        <div class='author-name grey'>Shine Wang</div>
+        <div class='author-work blue'>Code Farmer C / C++</div>
+        <div class='author-name grey'>Wang Heng</div>
+        <div class='author-work blue'>Code Farmer HTML5</div>
+        <div class='author-name grey'>Wang Yunbo</div>
+    </div>
+    <div class='relative left border'>
+        <div id='audio' class='hide'>
+            <!-- bgm -->
+            <audio src='audio/bg_before_enter.mp3' id='audio-bg-menu'></audio>
+            <audio src='audio/bg_in_game.mp3' id='audio-bg-game' loop='true'></audio>
+
+            <audio src='audio/menu_mouse_over.mp3' id='audio-menu-over'></audio>
+            <audio src='audio/menu_click.mp3' id='audio-menu-click'></audio>
+            <audio src='audio/kickwall.mp3' id='audio-kickwall'></audio>
+            <audio src='audio/findsprite.mp3' id='audio-findsprite'></audio>
+            <audio src='audio/monster_warning.mp3' id='audio-monster-warning'></audio>
+            <audio src='audio/monster_catch.mp3' id='audio-monster-catch'></audio>
+            <audio src='audio/finalwin.mp3' id='audio-win'></audio>
+            <audio src='audio/death.mp3' id='audio-death'></audio>
+            <audio src='audio/speedup.mp3' id='audio-speedup'></audio>
+        </div>
+        <div id='menu' class='center border'>
+            <div id='button-start' class='center button'></div>
+            <div id='button-music' class='center button'></div>
+            <div id='button-sound' class='center button'></div>
+        </div>
+        <div id='game' class='center border hide relative'>
+            <div id='banner-win' style='display: none;' class='absolute'></div>
+            <div id='banner-lose' style='display: none;' class='absolute'></div>
+        </div>
+    </div>
+    <div class='clear'></div>
+</body>
+</html>
