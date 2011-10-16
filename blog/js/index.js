@@ -13,10 +13,17 @@ View.prototype.json = function(data, cb) {
     }
     return j.data;
 };
+View.prototype.pad = function(number) {
+    return ('' + number).length === 1 ? '0' + number : number;
+};
 View.prototype.getDate = function(string) {
     var d = new Date(string);
-    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' +
-        d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
+    return d.getFullYear() + '-' +
+        this.pad((d.getMonth() + 1)) + '-' + 
+        this.pad(d.getDate()) + ' ' +
+        this.pad(d.getHours()) + ':' + 
+        this.pad(d.getMinutes()) + ':' + 
+        this.pad(d.getSeconds());
 }
 View.prototype.getList = function() {
     var _this = this;

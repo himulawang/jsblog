@@ -79,7 +79,9 @@ Admin.prototype.switchArticle = function(index) {
     this.articleIndex = index;
 }
 Admin.prototype.newArticle = function() {
-    this.save();
+    if (this.blogs[this.articleIndex]) {
+        this.save();
+    }
     $('#title').val('');
     $('#edit-area').html('');
     $('#date').html('');
