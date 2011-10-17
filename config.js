@@ -18,7 +18,7 @@ if (env === 'local') {
 } else if (env === 'live') {
     G.PORT = '80';
     G.URL_ADMIN = 'ws://ila.no.de:' + G.PORT;
-    G.PASSWORD = '!QAZXSW@';
+    G.PASSWORD = '123';
 }
 
 G.DB = 'mongodb://127.0.0.1/jsblog';
